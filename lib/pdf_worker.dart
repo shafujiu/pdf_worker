@@ -26,4 +26,16 @@ class PdfWorker {
   Future<bool> unlock({required String filePath, required String password}) {
     return PdfWorkerPlatform.instance.unlock(filePath: filePath, password: password);
   }
+  
+  // split
+  // choose pages to merge a new pdf
+  Future<String?>choosePagesIndexToMerge({required String inputPath, required String outputPath, required List<int> pagesIndex}) {
+    return PdfWorkerPlatform.instance.choosePagesIndexToMerge(inputPath: inputPath, outputPath: outputPath, pagesIndex: pagesIndex);
+  }
+    
+  // merge
+  // make multiple pdf to one pdf
+  Future<String>mergePdfFiles({required List<String> filesPath, required String outputPath}) {
+    return PdfWorkerPlatform.instance.mergePdfFiles(filesPath: filesPath, outputPath: outputPath);
+  }
 }

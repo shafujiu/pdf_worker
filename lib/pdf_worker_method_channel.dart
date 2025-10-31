@@ -78,4 +78,37 @@ class MethodChannelPdfWorker extends PdfWorkerPlatform {
       rethrow;
     }
   }
+
+  @override
+  Future<String?>choosePagesIndexToMerge({required String inputPath, required String outputPath, required List<int> pagesIndex}) async {
+    try {
+      final String? result = await methodChannel.invokeMethod('choosePagesIndexToMerge', {
+        'inputPath': inputPath,
+        'outputPath': outputPath,
+        'pagesIndex': pagesIndex,
+      });
+      return result;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("Failed to choose pages to merge PDF: '${e.message}'.");
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String>mergePdfFiles({required List<String> filesPath, required String outputPath}) async {
+    try {
+      final String result = await methodChannel.invokeMethod('mergePdfFiles', {
+        'filesPath': filesPath,
+        'outputPath': outputPath,
+      });
+      return result;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("Failed to merge PDF files: '${e.message}'.");
+      }
+      rethrow;
+    }
+  }
 }

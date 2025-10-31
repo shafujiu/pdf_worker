@@ -14,11 +14,13 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
     // when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
     private lateinit var pdfLocker: PdfLocker
+    private lateinit var pdfMerger: PdfMerger
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "pdf_worker")
         channel.setMethodCallHandler(this)
         pdfLocker = PdfLocker()
+        pdfMerger = PdfMerger()
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -80,6 +82,35 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.success(isUnlocked)
                 } catch (e: Exception) {
                     result.error("UNLOCK_FAILED", "Failed to unlock PDF", e.message)
+                }
+            }
+            "choosePagesIndexToMerge" -> {
+                val inputPath = call.argument<String>("inputPath")
+                val outputPath = call.argument<String>("outputPath")
+                val pagesIndex = call.argument<List<Int>>("pagesIndex")
+                if (inputPath == null || outputPath == null || pagesIndex == null) {
+                    result.error("INVALID_ARGUMENTS", "Input path, output path or pages is null", null)
+                    return
+                }
+                try {
+                    val outputPath = pdfMerger.choosePagesIndexToMerge(inputPath, outputPath, pagesIndex)
+                    result.success(outputPath)
+                } catch (e: Exception) {
+                    result.error("CHOOSE_PAGES_TO_MERGE_FAILED", "Failed to choose pages to merge", e.message)
+                }
+            }
+            "mergePdfFiles" -> {
+                val filesPath = call.argument<List<String>>("filesPath")
+                val outputPath = call.argument<String>("outputPath")
+                if (filesPath == null || outputPath == null) {
+                    result.error("INVALID_ARGUMENTS", "Files path or output path is null", null)
+                    return
+                }
+                try {
+                    val outputPath = pdfMerger.mergePdfFiles(filesPath, outputPath)
+                    result.success(outputPath)
+                } catch (e: Exception) {
+                    result.error("MERGE_PDF_FILES_FAILED", "Failed to merge PDF files", e.message)
                 }
             }
             else -> {

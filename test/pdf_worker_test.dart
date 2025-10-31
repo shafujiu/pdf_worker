@@ -27,6 +27,15 @@ class MockPdfWorkerPlatform
     return Future.value(false);
   }
 
+  @override
+  Future<String?>choosePagesIndexToMerge({required String inputPath, required String outputPath, required List<int> pagesIndex}) {
+    return Future.value(null);
+  }
+
+  @override
+  Future<String>mergePdfFiles({required List<String> filesPath, required String outputPath}) {
+    return Future.value('');
+  }
 }
 
 void main() {
@@ -75,4 +84,21 @@ void main() {
 
     expect(await pdfWorkerPlugin.unlock(filePath: 'test.pdf', password: '123456'), false);
   });
+
+  test('choosePagesIndexToMerge', () async {
+    PdfWorker pdfWorkerPlugin = PdfWorker();
+    MockPdfWorkerPlatform fakePlatform = MockPdfWorkerPlatform();
+    PdfWorkerPlatform.instance = fakePlatform;
+
+    expect(await pdfWorkerPlugin.choosePagesIndexToMerge(inputPath: 'test.pdf', outputPath: 'test.pdf', pagesIndex: [1, 2, 3]), null);
+  });
+
+  test('mergePdfFiles', () async {
+    PdfWorker pdfWorkerPlugin = PdfWorker();
+    MockPdfWorkerPlatform fakePlatform = MockPdfWorkerPlatform();
+    PdfWorkerPlatform.instance = fakePlatform;
+
+    expect(await pdfWorkerPlugin.mergePdfFiles(filesPath: ['test.pdf'], outputPath: 'test.pdf'), '');
+  });
+
 }

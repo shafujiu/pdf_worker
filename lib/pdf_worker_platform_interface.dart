@@ -55,4 +55,12 @@ abstract class PdfWorkerPlatform extends PlatformInterface {
   Future<bool> unlock({required String filePath, required String password}) {
     throw UnimplementedError('unlock() has not been implemented.');
   }
+
+  Future<String?>choosePagesIndexToMerge({required String inputPath, required String outputPath, required List<int> pagesIndex}) {
+    throw UnimplementedError('choosePagesIndexToMerge() has not been implemented.');
+  }
+
+  Future<String>mergePdfFiles({required List<String> filesPath, required String outputPath}) {
+    throw UnimplementedError('mergePdfFiles() has not been implemented.');
+  }
 }

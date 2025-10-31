@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pdf_worker_example/home_page.dart';
+import 'package:pdf_worker_example/locker_page.dart';
+import 'package:pdf_worker_example/merge_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,10 +13,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      home: HomePage(),
+      home: MergePage(),
       initialBinding: BindingsBuilder(
         () {
-          Get.put(HomeController());
+          Get.put(LockerController());
+          Get.put(MergeController());
         },
       ),
     );

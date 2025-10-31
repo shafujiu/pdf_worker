@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_worker/pdf_worker.dart';
 
-class HomeController extends GetxController {
+
+
+class LockerController extends GetxController {
   final _pdfWorkerPlugin = PdfWorker();
   final platformVersion = 'unknown'.obs;
   late final String tempFilePath;
@@ -84,13 +86,13 @@ class HomeController extends GetxController {
   }
 }
 
-class HomePage extends GetView<HomeController> {
-  const HomePage({super.key});
+class LockerPage extends GetView<LockerController> {
+  const LockerPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home Page')),
+      appBar: AppBar(title: const Text('Locker Page')),
       body: Center(
         child: Column(
           spacing: 24,
