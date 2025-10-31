@@ -41,13 +41,21 @@ class HomeController extends GetxController {
   }
 
   Future<void> checkIfPdfIsEncryptedByTail() async {
-    final result = await _pdfWorkerPlugin.isEncryptedByTail(filePath: tempFilePath);
-    Get.snackbar('Is Encrypted By Tail', result ? 'Yes' : 'No');
+    try {
+      final result = await _pdfWorkerPlugin.isEncryptedByTail(filePath: tempFilePath);
+      Get.snackbar('Is Encrypted By Tail', result ? 'Yes' : 'No');
+    } catch (error) {
+      debugPrint(error.toString());
+    }
   }
 
   Future<void> checkIfPdfIsEncrypted() async {
-    final result = await _pdfWorkerPlugin.isEncrypted(filePath: tempFilePath);
-    Get.snackbar('Is Encrypted', result ? 'Yes' : 'No');
+    try {
+      final result = await _pdfWorkerPlugin.isEncrypted(filePath: tempFilePath);
+      Get.snackbar('Is Encrypted', result ? 'Yes' : 'No');
+    } catch (error) {
+      debugPrint(error.toString());
+    }
   }
 
   Future<void> lockPdf() async {
@@ -64,11 +72,15 @@ class HomeController extends GetxController {
   }
 
   Future<void> unlockPdf() async {
-    final result = await _pdfWorkerPlugin.unlock(
-      filePath: tempFilePath,
-      password: '123456',
-    );
-    Get.snackbar('Unlock PDF', result ? 'Success' : 'Failed');
+    try {
+      final result = await _pdfWorkerPlugin.unlock(
+        filePath: tempFilePath,
+        password: '123456',
+      );
+      Get.snackbar('Unlock PDF', result ? 'Success' : 'Failed');
+    } catch (e) {
+      Get.snackbar('Unlock PDF', 'Failed');
+    }
   }
 }
 

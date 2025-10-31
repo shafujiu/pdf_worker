@@ -15,9 +15,15 @@ pdf_worker: ^1.0.0
 ```dart
 final pdfWorker = PdfWorker();
 
-final isEncrypted = await pdfWorker.isEncrypted(filePath: 'test.pdf');
-final lockResult = await pdfWorker.lock(filePath: 'test.pdf', password: '123456');
-final unlockResult = await pdfWorker.unlock(filePath: 'test.pdf', password: '123456');
+try {
+    // path need the device pdf file path
+    final isEncrypted = await pdfWorker.isEncrypted(filePath: 'test.pdf');
+    await pdfWorker.lock(filePath: 'test.pdf', password: '123456');
+    final locked = await pdfWorker.unlock(filePath: 'test.pdf', password: '123456');
+
+} catch (e) {
+    debugPrint(e.toString());
+}
 ```
 
 
