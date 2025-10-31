@@ -13,7 +13,54 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
     switch call.method {
     case "getPlatformVersion":
       result("iOS " + UIDevice.current.systemVersion)
+      case "isEncryptedByTail":
+        guard let args = call.arguments as? [String: Any],
+        let filePath = args["filePath"] as? String
+      else {
+        result(
+          FlutterError(
+            code: "INVALID_ARGUMENTS", message: "Missing filePath", details: nil))
+        return
+      }
+      do {
+        let isEncrypted = try pdfLocker.isEncryptedByTail(filePath: filePath)
+        result(isEncrypted)
+      } catch {
+        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      }
     case "isEncrypted":
+      guard let args = call.arguments as? [String: Any],
+        let filePath = args["filePath"] as? String
+      else {
+        result(
+          FlutterError(
+            code: "INVALID_ARGUMENTS", message: "Missing filePath", details: nil))
+        return
+      }
+      do {
+        let isEncrypted = try pdfLocker.isEncrypted(filePath: filePath)
+        result(isEncrypted)
+      } catch {
+        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      }
+    case "lock":
+      guard let args = call.arguments as? [String: Any],
+        let filePath = args["filePath"] as? String,
+        let userPassword = args["userPassword"] as? String,
+        let ownerPassword = args["ownerPassword"] as? String
+      else {
+        result(
+          FlutterError(
+            code: "INVALID_ARGUMENTS", message: "Missing filePath or password", details: nil))
+        return
+      }
+      do {
+         try pdfLocker.lock(filePath: filePath, ownerPassword: ownerPassword, userPassword: userPassword)
+        result(true)
+      } catch {
+        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      }
+    case "unlock":
       guard let args = call.arguments as? [String: Any],
         let filePath = args["filePath"] as? String,
         let password = args["password"] as? String
@@ -23,8 +70,12 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
             code: "INVALID_ARGUMENTS", message: "Missing filePath or password", details: nil))
         return
       }
-      let result = pdfLocker.isEncrypted(filePath: filePath)
-      result(result)
+      do {
+        let isUnlocked = try pdfLocker.unlock(filePath: filePath, password: password)
+        result(isUnlocked)
+      } catch {
+        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      }
     default:
       result(FlutterMethodNotImplemented)
     }

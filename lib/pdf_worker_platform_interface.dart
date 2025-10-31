@@ -27,6 +27,10 @@ abstract class PdfWorkerPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
+  Future<bool> isEncryptedByTail({required String filePath}) {
+    throw UnimplementedError('isEncryptedByTail() has not been implemented.');
+  }
+
   // lock & unlock
   /// pdf is encrypted or not
   /// filePath: pdf file path
@@ -37,9 +41,10 @@ abstract class PdfWorkerPlatform extends PlatformInterface {
 
   /// lock pdf
   /// filePath: pdf file path
-  /// password: pdf password
+  /// userPassword: pdf user password
+  /// ownerPassword: pdf owner password
   /// return: lock result
-  Future<bool> lock({required String filePath, required String password}) {
+  Future<void> lock({required String filePath, required String userPassword, required String ownerPassword}) {
     throw UnimplementedError('lock() has not been implemented.');
   }
 

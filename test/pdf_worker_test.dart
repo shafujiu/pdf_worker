@@ -15,13 +15,16 @@ class MockPdfWorkerPlatform
   Future<bool> isEncrypted({required String filePath}) => Future.value(false);
 
   @override
-  Future<bool> lock({required String filePath, required String password}) {
-    return Future.value(true);
+  Future<bool> isEncryptedByTail({required String filePath}) => Future.value(false);
+
+  @override
+  Future<bool> lock({required String filePath, required String userPassword, required String ownerPassword}) {
+    return Future.value(false);
   }
 
   @override
   Future<bool> unlock({required String filePath, required String password}) {
-    return Future.value(true);
+    return Future.value(false);
   }
 
 }
@@ -41,11 +44,35 @@ void main() {
     expect(await pdfWorkerPlugin.getPlatformVersion(), '42');
   });
 
+  test('isEncryptedByTail', () async {
+    PdfWorker pdfWorkerPlugin = PdfWorker();
+    MockPdfWorkerPlatform fakePlatform = MockPdfWorkerPlatform();
+    PdfWorkerPlatform.instance = fakePlatform;
+
+    expect(await pdfWorkerPlugin.isEncryptedByTail(filePath: 'test.pdf'), false);
+  });
+
   test('isEncrypted', () async {
     PdfWorker pdfWorkerPlugin = PdfWorker();
     MockPdfWorkerPlatform fakePlatform = MockPdfWorkerPlatform();
     PdfWorkerPlatform.instance = fakePlatform;
 
     expect(await pdfWorkerPlugin.isEncrypted(filePath: 'test.pdf'), false);
+  });
+
+  test('lock', () async {
+    PdfWorker pdfWorkerPlugin = PdfWorker();
+    MockPdfWorkerPlatform fakePlatform = MockPdfWorkerPlatform();
+    PdfWorkerPlatform.instance = fakePlatform;
+
+    await pdfWorkerPlugin.lock(filePath: 'test.pdf', userPassword: '123456', ownerPassword: '123456');
+  });
+
+  test('unlock', () async {
+    PdfWorker pdfWorkerPlugin = PdfWorker();
+    MockPdfWorkerPlatform fakePlatform = MockPdfWorkerPlatform();
+    PdfWorkerPlatform.instance = fakePlatform;
+
+    expect(await pdfWorkerPlugin.unlock(filePath: 'test.pdf', password: '123456'), false);
   });
 }

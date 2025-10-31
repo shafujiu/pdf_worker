@@ -12,12 +12,20 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       channel,
       (MethodCall methodCall) async {
-        if (methodCall.method == 'getPlatformVersion') {
-          return '42';
-        } else if (methodCall.method == 'isEncrypted') {
-          return true;
+        switch (methodCall.method) {
+          case 'getPlatformVersion':
+            return '42';
+          case 'isEncrypted':
+            return true;
+          case 'isEncryptedByTail':
+            return true;
+          case 'lock':
+            return true;
+          case 'unlock':
+            return true;
+          default:
+            return null;
         }
-        return null;
       },
     );
   });
@@ -30,7 +38,19 @@ void main() {
     expect(await platform.getPlatformVersion(), '42');
   });
 
+  test('isEncryptedByTail', () async {
+    expect(await platform.isEncryptedByTail(filePath: 'test.pdf'), true);
+  });
+
   test('isEncrypted', () async {
     expect(await platform.isEncrypted(filePath: 'test.pdf'), true);
+  });
+
+  test('lock', () async {
+    await platform.lock(filePath: 'test.pdf', userPassword: '123456', ownerPassword: '123456');
+  });
+
+  test('unlock', () async {
+    expect(await platform.unlock(filePath: 'test.pdf', password: '123456'), true);
   });
 }

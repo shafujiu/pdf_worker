@@ -33,13 +33,28 @@ class MethodChannelPdfWorker extends PdfWorkerPlatform {
   }
 
   @override
-  Future<bool> lock({required String filePath, required String password}) async {
+  Future<bool> isEncryptedByTail({required String filePath}) async {
     try {
-      final bool result = await methodChannel.invokeMethod('lock', {
+      final bool result = await methodChannel.invokeMethod('isEncryptedByTail', {
         'filePath': filePath,
-        'password': password,
       });
       return result;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("Failed to check if PDF is encrypted by tail: '${e.message}'.");
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> lock({required String filePath, required String userPassword, required String ownerPassword}) async {
+    try {
+      await methodChannel.invokeMethod('lock', {
+        'filePath': filePath,
+        'userPassword': userPassword,
+        'ownerPassword': ownerPassword,
+      });
     } on PlatformException catch (e) {
       if (kDebugMode) {
         print("Failed to lock PDF: '${e.message}'.");
