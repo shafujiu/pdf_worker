@@ -7,3 +7,9 @@
 * add android ios platform base features
 * add try catch for all methods
 * add example
+
+## 1.0.2
+
+* add choosePagesIndexToMerge method
+* add mergePdfFiles method
+
