@@ -2,7 +2,9 @@ import Flutter
 import UIKit
 
 public class PdfWorkerPlugin: NSObject, FlutterPlugin {
-    let pdfLocker = PdfLocker()
+  private let pdfLocker = PdfLocker()
+  private let pdfMerger = PdfMerger()
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "pdf_worker", binaryMessenger: registrar.messenger())
     let instance = PdfWorkerPlugin()
@@ -13,8 +15,8 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
     switch call.method {
     case "getPlatformVersion":
       result("iOS " + UIDevice.current.systemVersion)
-      case "isEncryptedByTail":
-        guard let args = call.arguments as? [String: Any],
+    case "isEncryptedByTail":
+      guard let args = call.arguments as? [String: Any],
         let filePath = args["filePath"] as? String
       else {
         result(
@@ -55,7 +57,8 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
         return
       }
       do {
-         try pdfLocker.lock(filePath: filePath, ownerPassword: ownerPassword, userPassword: userPassword)
+        try pdfLocker.lock(
+          filePath: filePath, ownerPassword: ownerPassword, userPassword: userPassword)
         result(true)
       } catch {
         result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
@@ -76,6 +79,46 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
       } catch {
         result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
       }
+    case "choosePagesIndexToMerge":
+      guard let args = call.arguments as? [String: Any],
+        let inputPath = args["inputPath"] as? String,
+        let outputPath = args["outputPath"] as? String,
+        let pagesIndex = args["pagesIndex"] as? [Int]
+      else {
+        result(
+          FlutterError(
+            code: "INVALID_ARGUMENTS", message: "Missing inputPath or outputPath or pagesIndex",
+            details: nil))
+        return
+      }
+      do {
+        let outputPath = try pdfMerger.choosePagesIndexToMerge(
+          inputPath: inputPath,
+          outputPath: outputPath,
+          pagesIndex: pagesIndex)
+        result(outputPath)
+      } catch {
+        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      }
+    case "mergePdfFiles":
+      guard let args = call.arguments as? [String: Any],
+        let filesPath = args["filesPath"] as? [String],
+        let outputPath = args["outputPath"] as? String
+      else {
+        result(
+          FlutterError(
+            code: "INVALID_ARGUMENTS", message: "Missing filesPath or outputPath", details: nil))
+        return
+      }
+      do {
+        let outputPath = try pdfMerger.mergePdfFiles(
+          filesPath: filesPath,
+          outputPath: outputPath)
+        result(outputPath)
+      } catch {
+        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      }
+
     default:
       result(FlutterMethodNotImplemented)
     }

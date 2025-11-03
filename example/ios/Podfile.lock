@@ -7,12 +7,19 @@ PODS:
     - FlutterMacOS
   - pdf_worker (0.0.1):
     - Flutter
+  - pdfrx (0.0.12):
+    - Flutter
+    - FlutterMacOS
+  - url_launcher_ios (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - pdf_worker (from `.symlinks/plugins/pdf_worker/ios`)
+  - pdfrx (from `.symlinks/plugins/pdfrx/darwin`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
@@ -23,12 +30,18 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   pdf_worker:
     :path: ".symlinks/plugins/pdf_worker/ios"
+  pdfrx:
+    :path: ".symlinks/plugins/pdfrx/darwin"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   pdf_worker: 7a3bc98625dc86b58a45ea37c72d5206a511e227
+  pdfrx: af3a9815e0f9b28ad40c6bdc8ee56f3d77dc5574
+  url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
 
 PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
 

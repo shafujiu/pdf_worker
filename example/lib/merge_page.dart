@@ -55,7 +55,7 @@ class MergeController extends GetxController {
   Future<void> mergePdfFiles() async {
     try {
       final tempDir = await getTemporaryDirectory();
-      final mergedPath = '${tempDir.path}/merged.pdf';
+      final mergedPath = '${tempDir.path}/merged.pdf'; // 1,2
       final outputPath = '${tempDir.path}/files_merged.pdf';
       final filesPath = [tempFilePath, mergedPath];
       final result = await _pdfWorkerPlugin.mergePdfFiles(
