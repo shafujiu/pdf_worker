@@ -50,7 +50,7 @@ class PdfWorker {
     return PdfWorkerPlatform.instance.mergeImagesToPdf(
       imagesPath: imagesPath,
       outputPath: outputPath,
-      config: config?.toJson(),
+      config: config?.toJson() ?? ImagesToPdfConfig.a4Config().toJson(),
     );
   }
 }

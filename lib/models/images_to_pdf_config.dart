@@ -5,9 +5,9 @@ class ImageScale {
   final int maxHeight;
 
   Map<String, dynamic> toJson() => {
-        'maxWidth': maxWidth,
-        'maxHeight': maxHeight,
-      };
+    'maxWidth': maxWidth,
+    'maxHeight': maxHeight,
+  };
 }
 
 class ImagesToPdfConfig {
@@ -17,7 +17,14 @@ class ImagesToPdfConfig {
   final bool keepAspectRatio;
 
   Map<String, dynamic> toJson() => {
-        'rescale': rescale.toJson(),
-        'keepAspectRatio': keepAspectRatio,
-      };
+    'rescale': rescale.toJson(),
+    'keepAspectRatio': keepAspectRatio,
+  };
+
+  factory ImagesToPdfConfig.a4Config() {
+    return ImagesToPdfConfig(
+      rescale: ImageScale(maxWidth: 595*2, maxHeight: 842*2),
+      keepAspectRatio: true,
+    );
+  }
 }
