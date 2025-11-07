@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_worker/pdf_worker.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -69,6 +70,26 @@ class MergeController extends GetxController {
       Get.snackbar('Error', e.toString());
     }
   }
+
+  Future<void> mergeImagesToPdf() async {
+    try {
+      // pick images
+      final imagesPath = await ImagePicker().pickMultiImage();
+      if (imagesPath.isEmpty) return;
+
+      final tempDir = await getTemporaryDirectory();
+      final outputPath = '${tempDir.path}/images_merged.pdf';
+      final filesPath = imagesPath.map((x) => x.path).toList();
+      final result = await _pdfWorkerPlugin.mergeImagesToPdf(
+        imagesPath: filesPath,
+        outputPath: outputPath,
+      );
+
+      docRef.value = PdfDocumentRefFile(result);
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    }
+  }
 }
 
 class MergePage extends GetView<MergeController> {
@@ -83,6 +104,10 @@ class MergePage extends GetView<MergeController> {
           ElevatedButton(onPressed: () async {controller.choosePagesToMerge();}, child: const Text('Choose Pages To Merge')),
 
           ElevatedButton(onPressed: () async {controller.mergePdfFiles();}, child: const Text('Merge PDF Files')),
+          
+          // merge images to pdf
+          ElevatedButton(onPressed: () async {controller.mergeImagesToPdf();}, child: const Text('Merge Images To PDF ')),
+
           Obx(
             () => Expanded(
               child: controller.docRef.value != null

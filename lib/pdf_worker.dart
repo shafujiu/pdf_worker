@@ -1,5 +1,7 @@
 
+import 'models/images_to_pdf_config.dart';
 import 'pdf_worker_platform_interface.dart';
+export 'models/images_to_pdf_config.dart';
 
 class PdfWorker {
   Future<String?> getPlatformVersion() {
@@ -37,5 +39,18 @@ class PdfWorker {
   // make multiple pdf to one pdf
   Future<String>mergePdfFiles({required List<String> filesPath, required String outputPath}) {
     return PdfWorkerPlatform.instance.mergePdfFiles(filesPath: filesPath, outputPath: outputPath);
+  }
+
+  // make multiple images to one pdf
+  Future<String>mergeImagesToPdf({
+    required List<String> imagesPath,
+    required String outputPath,
+    ImagesToPdfConfig? config,
+  }) {
+    return PdfWorkerPlatform.instance.mergeImagesToPdf(
+      imagesPath: imagesPath,
+      outputPath: outputPath,
+      config: config?.toJson(),
+    );
   }
 }

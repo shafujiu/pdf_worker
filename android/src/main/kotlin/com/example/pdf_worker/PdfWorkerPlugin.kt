@@ -113,6 +113,22 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.error("MERGE_PDF_FILES_FAILED", "Failed to merge PDF files", e.message)
                 }
             }
+            "mergeImagesToPdf" -> {
+                val imagesPath = call.argument<List<String>>("imagesPath")
+                val outputPath = call.argument<String>("outputPath")
+                val configMap = call.argument<Map<String, Any?>>("config")
+                if (imagesPath == null || outputPath == null) {
+                    result.error("INVALID_ARGUMENTS", "Images path or output path is null", null)
+                    return
+                }
+                try {
+                    val config = parsePdfConfig(configMap)
+                    val mergedPath = pdfMerger.mergeImagesToPdf(imagesPath, outputPath, config)
+                    result.success(mergedPath)
+                } catch (e: Exception) {
+                    result.error("MERGE_IMAGES_TO_PDF_FAILED", "Failed to merge images to PDF", e.message)
+                }
+            }
             else -> {
                 result.notImplemented()
             }
@@ -121,5 +137,17 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+    }
+
+    private fun parsePdfConfig(configMap: Map<String, Any?>?): PdfFromMultipleImageConfig? {
+        configMap ?: return null
+        val rescaleMap = configMap["rescale"] as? Map<*, *> ?: return null
+        val widthValue = (rescaleMap["maxWidth"] as? Number)?.toInt() ?: 0
+        val heightValue = (rescaleMap["maxHeight"] as? Number)?.toInt() ?: 0
+        val keepAspectRatio = configMap["keepAspectRatio"] as? Boolean ?: true
+        return PdfFromMultipleImageConfig(
+            rescale = ImageScale(widthValue, heightValue),
+            keepAspectRatio = keepAspectRatio,
+        )
     }
 }

@@ -63,4 +63,12 @@ abstract class PdfWorkerPlatform extends PlatformInterface {
   Future<String>mergePdfFiles({required List<String> filesPath, required String outputPath}) {
     throw UnimplementedError('mergePdfFiles() has not been implemented.');
   }
+
+  Future<String>mergeImagesToPdf({
+    required List<String> imagesPath,
+    required String outputPath,
+    Map<String, dynamic>? config,
+  }) {
+    throw UnimplementedError('mergeImagesToPdf() has not been implemented.');
+  }
 }

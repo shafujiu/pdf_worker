@@ -111,4 +111,21 @@ class MethodChannelPdfWorker extends PdfWorkerPlatform {
       rethrow;
     }
   }
+
+  @override
+  Future<String>mergeImagesToPdf({required List<String> imagesPath, required String outputPath, Map<String, dynamic>? config}) async {
+    try {
+      final String result = await methodChannel.invokeMethod('mergeImagesToPdf', {
+        'imagesPath': imagesPath,
+        'outputPath': outputPath,
+        'config': config,
+      });
+      return result;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("Failed to merge images to PDF: '${e.message}'.");
+      }
+      rethrow;
+    }
+  }
 }

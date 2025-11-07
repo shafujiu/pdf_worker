@@ -53,4 +53,12 @@ class PdfMerger {
         mergedDocument.close()
         return outputPath
     }
+
+    fun mergeImagesToPdf(
+        imagesPath: List<String>,
+        outputPath: String,
+        config: PdfFromMultipleImageConfig? = null,
+    ): String {
+        return ImagesToPdfHelper.imagesToPdf(imagesPath, outputPath, config)
+    }
 }
