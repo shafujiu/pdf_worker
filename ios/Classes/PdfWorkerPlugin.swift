@@ -139,6 +139,24 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
       } catch {
         result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
       }
+    case "pdfToImages":
+      guard let args = call.arguments as? [String: Any],
+        let inputPath = args["inputPath"] as? String,
+        let outputDirectory = args["outputDirectory"] as? String
+      else {
+        result(
+          FlutterError(
+            code: "INVALID_ARGUMENTS", message: "Missing inputPath or outputDirectory", details: nil))
+        return
+      }
+      do {
+        let imagesPath: [String] = try PdfToImageHelper.pdfToImages(
+          inputPath: inputPath,
+          outputDirectory: outputDirectory)
+        result(imagesPath)
+      } catch {
+        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      }
     default:
       result(FlutterMethodNotImplemented)
     }

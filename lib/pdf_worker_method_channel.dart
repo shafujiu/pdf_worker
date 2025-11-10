@@ -128,4 +128,20 @@ class MethodChannelPdfWorker extends PdfWorkerPlatform {
       rethrow;
     }
   }
+
+  @override
+  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory}) async {
+    try {
+      final result = await methodChannel.invokeListMethod<String>('pdfToImages', {
+        'inputPath': inputPath,
+        'outputDirectory': outputDirectory,
+      });
+      return result ?? <String>[];
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("Failed to convert PDF to images: '${e.message}'.");
+      }
+      rethrow;
+    }
+  }
 }

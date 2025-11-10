@@ -53,4 +53,10 @@ class PdfWorker {
       config: config?.toJson() ?? ImagesToPdfConfig.a4Config().toJson(),
     );
   }
+
+  // pdf to images
+  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory}) {
+    final result = PdfWorkerPlatform.instance.pdfToImages(inputPath: inputPath, outputDirectory: outputDirectory);
+    return result;
+  }
 }

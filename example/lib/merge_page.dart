@@ -11,7 +11,7 @@ import 'package:pdfrx/pdfrx.dart';
 class MergeController extends GetxController {
   final _pdfWorkerPlugin = PdfWorker();
   Rx<PdfDocumentRef?> docRef = Rx(null);
-  late final String tempFilePath;
+  late final String assetsPdfFilePath;
   @override
   void onInit() {
     super.onInit();
@@ -31,12 +31,12 @@ class MergeController extends GetxController {
     final file = File('${tempDir.path}/$tempName')
       ..createSync(recursive: true)
       ..writeAsBytesSync(byteData.buffer.asUint8List());
-    tempFilePath = file.path;
+    assetsPdfFilePath = file.path;
   }
 
   Future<void> choosePagesToMerge() async {
     try {
-      final inputPath = tempFilePath;
+      final inputPath = assetsPdfFilePath;
       final pagesIndex = [1, 2];
       final tempDir = await getTemporaryDirectory();
       final outputPath = '${tempDir.path}/merged.pdf';
@@ -58,7 +58,7 @@ class MergeController extends GetxController {
       final tempDir = await getTemporaryDirectory();
       final mergedPath = '${tempDir.path}/merged.pdf'; // 1,2
       final outputPath = '${tempDir.path}/files_merged.pdf';
-      final filesPath = [tempFilePath, mergedPath];
+      final filesPath = [assetsPdfFilePath, mergedPath];
       final result = await _pdfWorkerPlugin.mergePdfFiles(
         filesPath: filesPath,
         outputPath: outputPath,
@@ -90,6 +90,27 @@ class MergeController extends GetxController {
       Get.snackbar('Error', e.toString());
     }
   }
+
+  Future<void> pdfToImages() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final outputDirectory = '${tempDir.path}/images';
+      final result = await _pdfWorkerPlugin.pdfToImages(
+        inputPath: assetsPdfFilePath,
+        outputDirectory: outputDirectory,
+      );
+
+      Get.toNamed('/result', arguments: result);
+
+      // show images
+     // Get.snackbar('Success', 'PDF to images success ${result.length} images');
+
+
+
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    }
+  }
 }
 
 class MergePage extends GetView<MergeController> {
@@ -108,6 +129,8 @@ class MergePage extends GetView<MergeController> {
           // merge images to pdf
           ElevatedButton(onPressed: () async {controller.mergeImagesToPdf();}, child: const Text('Merge Images To PDF ')),
 
+          // pdf to images
+          ElevatedButton(onPressed: () async {controller.pdfToImages();}, child: const Text('PDF To Images')),
           Obx(
             () => Expanded(
               child: controller.docRef.value != null

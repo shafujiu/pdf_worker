@@ -71,4 +71,8 @@ abstract class PdfWorkerPlatform extends PlatformInterface {
   }) {
     throw UnimplementedError('mergeImagesToPdf() has not been implemented.');
   }
+
+  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory}) {
+    throw UnimplementedError('pdfToImages() has not been implemented.');
+  }
 }

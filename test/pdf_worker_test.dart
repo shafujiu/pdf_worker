@@ -41,6 +41,11 @@ class MockPdfWorkerPlatform
   Future<String>mergeImagesToPdf({required List<String> imagesPath, required String outputPath, Map<String, dynamic>? config}) {
     return Future.value('');
   }
+
+  @override
+  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory}) {
+    return Future.value([]);
+  }
 }
 
 void main() {
@@ -112,5 +117,13 @@ void main() {
     PdfWorkerPlatform.instance = fakePlatform;
 
     expect(await pdfWorkerPlugin.mergeImagesToPdf(imagesPath: ['test.png'], outputPath: 'test.pdf'), '');
+  });
+
+  test('pdfToImages', () async {
+    PdfWorker pdfWorkerPlugin = PdfWorker();
+    MockPdfWorkerPlatform fakePlatform = MockPdfWorkerPlatform();
+    PdfWorkerPlatform.instance = fakePlatform;
+
+    expect(await pdfWorkerPlugin.pdfToImages(inputPath: 'test.pdf', outputDirectory: 'test'), []);
   });
 }
