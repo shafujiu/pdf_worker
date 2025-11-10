@@ -1,8 +1,10 @@
 
+import 'package:pdf_worker/models/pdf_to_images_config.dart';
+
 import 'models/images_to_pdf_config.dart';
 import 'pdf_worker_platform_interface.dart';
 export 'models/images_to_pdf_config.dart';
-
+export 'models/pdf_to_images_config.dart';
 class PdfWorker {
   Future<String?> getPlatformVersion() {
     return PdfWorkerPlatform.instance.getPlatformVersion();
@@ -55,8 +57,8 @@ class PdfWorker {
   }
 
   // pdf to images
-  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory}) {
-    final result = PdfWorkerPlatform.instance.pdfToImages(inputPath: inputPath, outputDirectory: outputDirectory);
+  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory, PdfToImagesConfig? config}) {
+    final result = PdfWorkerPlatform.instance.pdfToImages(inputPath: inputPath, outputDirectory: outputDirectory, config: config?.toJson());
     return result;
   }
 }

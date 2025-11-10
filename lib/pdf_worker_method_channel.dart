@@ -130,11 +130,12 @@ class MethodChannelPdfWorker extends PdfWorkerPlatform {
   }
 
   @override
-  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory}) async {
+  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory, Map<String, dynamic>? config}) async {
     try {
       final result = await methodChannel.invokeListMethod<String>('pdfToImages', {
         'inputPath': inputPath,
         'outputDirectory': outputDirectory,
+        'config': config,
       });
       return result ?? <String>[];
     } on PlatformException catch (e) {

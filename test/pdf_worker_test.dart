@@ -43,7 +43,7 @@ class MockPdfWorkerPlatform
   }
 
   @override
-  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory}) {
+  Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory, Map<String, dynamic>? config}) {
     return Future.value([]);
   }
 }

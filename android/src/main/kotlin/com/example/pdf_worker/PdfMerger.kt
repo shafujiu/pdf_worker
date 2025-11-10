@@ -57,7 +57,7 @@ class PdfMerger {
     fun mergeImagesToPdf(
         imagesPath: List<String>,
         outputPath: String,
-        config: PdfFromMultipleImageConfig? = null,
+        config: ImagesToPdfConfig? = null,
     ): String {
         return ImagesToPdfHelper.imagesToPdf(imagesPath, outputPath, config)
     }

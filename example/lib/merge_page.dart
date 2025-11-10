@@ -95,9 +95,19 @@ class MergeController extends GetxController {
     try {
       final tempDir = await getTemporaryDirectory();
       final outputDirectory = '${tempDir.path}/images';
+      // create directory
+      if (!Directory(outputDirectory).existsSync()) {
+        Directory(outputDirectory).createSync(recursive: true);
+      }
+
       final result = await _pdfWorkerPlugin.pdfToImages(
         inputPath: assetsPdfFilePath,
         outputDirectory: outputDirectory,
+        config: PdfToImagesConfig(
+          pagesIndex: [ 0,1,2,3],
+          imgFormat: ImageFormat.png,
+          quality: 100,
+        ),
       );
 
       Get.toNamed('/result', arguments: result);

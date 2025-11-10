@@ -129,6 +129,22 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.error("MERGE_IMAGES_TO_PDF_FAILED", "Failed to merge images to PDF", e.message)
                 }
             }
+            "pdfToImages" -> {
+                val inputPath = call.argument<String>("inputPath")
+                val outputDirectory = call.argument<String>("outputDirectory")
+                val configMap = call.argument<Map<String, Any?>>("config")
+                if (inputPath == null || outputDirectory == null) {
+                    result.error("INVALID_ARGUMENTS", "Input path or output directory is null", null)
+                    return
+                }
+                try {
+                    val config = PdfToImagesConfig(configMap)
+                    val imagesPath = PdfToImageHelper.pdfToImages(inputPath, outputDirectory, config)
+                    result.success(imagesPath)
+                } catch (e: Exception) {
+                    result.error("PDF_TO_IMAGES_FAILED", "Failed to convert PDF to images", e.message)
+                }
+            }
             else -> {
                 result.notImplemented()
             }
@@ -139,13 +155,13 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
         channel.setMethodCallHandler(null)
     }
 
-    private fun parsePdfConfig(configMap: Map<String, Any?>?): PdfFromMultipleImageConfig? {
+    private fun parsePdfConfig(configMap: Map<String, Any?>?): ImagesToPdfConfig? {
         configMap ?: return null
         val rescaleMap = configMap["rescale"] as? Map<*, *> ?: return null
         val widthValue = (rescaleMap["maxWidth"] as? Number)?.toInt() ?: 0
         val heightValue = (rescaleMap["maxHeight"] as? Number)?.toInt() ?: 0
-        val keepAspectRatio = configMap["keepAspectRatio"] as? Boolean ?: true
-        return PdfFromMultipleImageConfig(
+        val keepAspectRatio = configMap["keepAspectRatio"] as? Boolean != false
+        return ImagesToPdfConfig(
             rescale = ImageScale(widthValue, heightValue),
             keepAspectRatio = keepAspectRatio,
         )
