@@ -18,3 +18,7 @@
 * add pdfToImages feature
 * add pdfToLongImage feature
 * add imagesToPdf feature
+
+## 1.0.4
+
+* do task on background

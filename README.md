@@ -26,11 +26,13 @@ try {
       outputPath: 'outpath.pdf',
     );
 
+
     final longImagePath = await pdfWorker.pdfToLongImage(
       inputPath: 'test.pdf',
       outputPath: 'outpath.jpg',
       pagesIndex: [1, 2],
     );
+
 
     final imagesPath = await pdfWorker.pdfToImages(
       inputPath: 'test.pdf',
