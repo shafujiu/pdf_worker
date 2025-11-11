@@ -13,3 +13,8 @@
 * add choosePagesIndexToMerge method
 * add mergePdfFiles method
 
+## 1.0.3
+
+* add pdfToImages feature
+* add pdfToLongImage feature
+* add imagesToPdf feature
