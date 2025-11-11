@@ -104,9 +104,9 @@ class MergeController extends GetxController {
         inputPath: assetsPdfFilePath,
         outputDirectory: outputDirectory,
         config: PdfToImagesConfig(
-          pagesIndex: [ 0,1,2,3],
-          imgFormat: ImageFormat.png,
-          quality: 100,
+          pagesIndex: [ 0,3],
+          imgFormat: ImageFormat.jpg,
+          quality: 30,
         ),
       );
 

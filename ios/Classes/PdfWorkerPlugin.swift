@@ -150,9 +150,11 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
         return
       }
       do {
+        let configDict = args["config"] as? [String: Any]
         let imagesPath: [String] = try PdfToImageHelper.pdfToImages(
           inputPath: inputPath,
-          outputDirectory: outputDirectory)
+          outputDirectory: outputDirectory,
+          config: PdfToImagesConfig(from: configDict))
         result(imagesPath)
       } catch {
         result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))

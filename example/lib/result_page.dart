@@ -32,7 +32,12 @@ class ResultPage extends GetView<ResultController> {
             : ListView.builder(
                 itemCount: controller.imagesPath.length,
                 itemBuilder: (context, index) {
-                  return Image.file(File(controller.imagesPath[index]));
+                  return Stack(
+                    children: [
+                      Image.file(File(controller.imagesPath[index])),
+                      // Center(child: Text(controller.imagesPath[index], style: const TextStyle(color: Colors.black),)),
+                    ],
+                  );
                 },
               ),
       ),
