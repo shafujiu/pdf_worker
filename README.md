@@ -26,6 +26,21 @@ try {
       outputPath: 'outpath.pdf',
     );
 
+    final longImagePath = await pdfWorker.pdfToLongImage(
+      inputPath: 'test.pdf',
+      outputPath: 'outpath.jpg',
+      pagesIndex: [1, 2],
+    );
+
+    final imagesPath = await pdfWorker.pdfToImages(
+      inputPath: 'test.pdf',
+      outputDirectory: 'outpath',
+      config: PdfToImagesConfig(
+        pagesIndex: [1, 2],
+        imgFormat: ImageFormat.jpg,
+        quality: 80,
+      ),
+    );
 } catch (e) {
     debugPrint(e.toString());
 }
@@ -34,9 +49,9 @@ try {
 
 ### TODO List
 
-- [ ] add merge pdf to long picture
+- [x] add merge pdf to long picture
 - [ ] add images to pdf 
-- [ ] add pdf to images
+- [x] add pdf to images
 
 
 
