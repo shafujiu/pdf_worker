@@ -61,4 +61,9 @@ class PdfWorker {
     final result = PdfWorkerPlatform.instance.pdfToImages(inputPath: inputPath, outputDirectory: outputDirectory, config: config?.toJson());
     return result;
   }
+
+  // pdf to long image
+  Future<String>pdfToLongImage({required String inputPath, required String outputPath, PdfToImagesConfig? config}) {
+    return PdfWorkerPlatform.instance.pdfToLongImage(inputPath: inputPath, outputPath: outputPath, config: config?.toJson());
+  }
 }

@@ -145,4 +145,21 @@ class MethodChannelPdfWorker extends PdfWorkerPlatform {
       rethrow;
     }
   }
+
+  @override
+  Future<String>pdfToLongImage({required String inputPath, required String outputPath, Map<String, dynamic>? config}) async {
+    try {
+      final String result = await methodChannel.invokeMethod('pdfToLongImage', {
+        'inputPath': inputPath,
+        'outputPath': outputPath,
+        'config': config,
+      });
+      return result;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("Failed to convert PDF to long image: '${e.message}'.");
+      }
+      rethrow;
+    }
+  }
 }

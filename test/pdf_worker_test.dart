@@ -46,6 +46,11 @@ class MockPdfWorkerPlatform
   Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory, Map<String, dynamic>? config}) {
     return Future.value([]);
   }
+
+  @override
+  Future<String>pdfToLongImage({required String inputPath, required String outputPath, Map<String, dynamic>? config}) {
+    return Future.value('');
+  }
 }
 
 void main() {
@@ -125,5 +130,13 @@ void main() {
     PdfWorkerPlatform.instance = fakePlatform;
 
     expect(await pdfWorkerPlugin.pdfToImages(inputPath: 'test.pdf', outputDirectory: 'test'), []);
+  });
+
+  test('pdfToLongImage', () async {
+    PdfWorker pdfWorkerPlugin = PdfWorker();
+    MockPdfWorkerPlatform fakePlatform = MockPdfWorkerPlatform();
+    PdfWorkerPlatform.instance = fakePlatform;
+
+    expect(await pdfWorkerPlugin.pdfToLongImage(inputPath: 'test.pdf', outputPath: 'test.pdf', config: PdfToImagesConfig()), '');
   });
 }

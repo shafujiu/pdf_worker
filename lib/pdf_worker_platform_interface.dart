@@ -1,4 +1,3 @@
-import 'package:pdf_worker/models/pdf_to_images_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'pdf_worker_method_channel.dart';
@@ -75,5 +74,9 @@ abstract class PdfWorkerPlatform extends PlatformInterface {
 
   Future<List<String>>pdfToImages({required String inputPath, required String outputDirectory, Map<String, dynamic>? config}) {
     throw UnimplementedError('pdfToImages() has not been implemented.');
+  }
+
+  Future<String>pdfToLongImage({required String inputPath, required String outputPath, Map<String, dynamic>? config}) {
+    throw UnimplementedError('pdfToLongImage() has not been implemented.');
   }
 }

@@ -121,6 +121,26 @@ class MergeController extends GetxController {
       Get.snackbar('Error', e.toString());
     }
   }
+
+  Future<void> pdfToLongImage() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final outputPath = '${tempDir.path}/long_image.jpg';
+      final result = await _pdfWorkerPlugin.pdfToLongImage(
+        inputPath: assetsPdfFilePath,
+        outputPath: outputPath,
+        config: PdfToImagesConfig(
+          pagesIndex: [3,2,1,0],
+          imgFormat: ImageFormat.jpg,
+          quality: 30,
+        ),
+      );
+
+      Get.toNamed('/result', arguments: [result]);
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    }
+  }
 }
 
 class MergePage extends GetView<MergeController> {
@@ -141,6 +161,9 @@ class MergePage extends GetView<MergeController> {
 
           // pdf to images
           ElevatedButton(onPressed: () async {controller.pdfToImages();}, child: const Text('PDF To Images')),
+
+          // pdf to long image
+          ElevatedButton(onPressed: () async {controller.pdfToLongImage();}, child: const Text('PDF To Long Image')),
           Obx(
             () => Expanded(
               child: controller.docRef.value != null

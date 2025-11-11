@@ -9,6 +9,7 @@ import androidx.core.graphics.createBitmap
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import kotlin.math.roundToInt
 
 enum class ImageFormat(val extension: String) {
     PNG("png"),
@@ -25,23 +26,30 @@ class PdfToImagesConfig {
         configMap ?: return
 
         val rawPagesIndex = configMap["pagesIndex"]
-        pagesIndex = (rawPagesIndex as? List<*>)
-                ?.takeIf { items -> items.all { it is Int } }
-                ?.map { it as Int }
+        pagesIndex =
+                (rawPagesIndex as? List<*>)?.takeIf { items -> items.all { it is Int } }?.map {
+                    it as Int
+                }
 
         val rawImgFormat = configMap["imgFormat"]
-        imgFormat = when (rawImgFormat) {
-            is ImageFormat -> rawImgFormat
-            is String -> runCatching { ImageFormat.valueOf(rawImgFormat) }.getOrDefault(imgFormat)
-            else -> imgFormat
-        }
+        imgFormat =
+                when (rawImgFormat) {
+                    is ImageFormat -> rawImgFormat
+                    is String ->
+                            runCatching { ImageFormat.valueOf(rawImgFormat) }
+                                    .getOrDefault(imgFormat)
+                    else -> imgFormat
+                }
 
         val rawQuality = configMap["quality"]
         quality = (rawQuality as? Number)?.toInt() ?: quality
+        quality = quality.coerceIn(0, 100)
     }
 
     constructor()
 }
+
+private data class PageDimension(val width: Int, val height: Int)
 
 object PdfToImageHelper {
     // quality：整数，范围 0～100
@@ -58,10 +66,11 @@ object PdfToImageHelper {
         }
         val config = config ?: PdfToImagesConfig()
         var format = Bitmap.CompressFormat.PNG
-        format = when (config.imgFormat) {
-            ImageFormat.PNG -> Bitmap.CompressFormat.PNG
-            ImageFormat.JPG -> Bitmap.CompressFormat.JPEG
-        }
+        format =
+                when (config.imgFormat) {
+                    ImageFormat.PNG -> Bitmap.CompressFormat.PNG
+                    ImageFormat.JPG -> Bitmap.CompressFormat.JPEG
+                }
 
         val fileDescriptor =
                 ParcelFileDescriptor.open(File(inputPath), ParcelFileDescriptor.MODE_READ_ONLY)
@@ -74,18 +83,14 @@ object PdfToImageHelper {
             throw IllegalArgumentException("pageNumbers is invalid")
         }
 
-        val pdfImages: MutableList<Bitmap> = mutableListOf()
         val pdfImagesPath: MutableList<String> = mutableListOf()
         for (pageIndex in pageNumbers) {
             val page = renderer.openPage(pageIndex)
-            val scale = 3.0f
-            val width = (page.width * scale).toInt()
-            val height = (page.height * scale).toInt()
-            val bitmap = createBitmap(width, height)
-
-            val canvas = Canvas(bitmap)
-            canvas.drawColor(Color.WHITE)
-            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            val bitmap = try {
+                renderPageToBitmap(page)
+            } finally {
+                page.close()
+            }
 
             val imageName =
                     "split_page_${System.currentTimeMillis()}_${pageIndex + 1}.${config.imgFormat.extension}"
@@ -93,14 +98,111 @@ object PdfToImageHelper {
             val outputFile = File(outputDirectory, imageName)
             FileOutputStream(outputFile).use { out ->
                 bitmap.compress(format, config.quality, out)
-                pdfImages.add(bitmap)
             }
-            // bitmap.recycle()
-            page.close()
+            bitmap.recycle()
         }
 
         renderer.close()
         fileDescriptor.close()
         return pdfImagesPath
     }
+
+    fun pdfToLongImage(inputPath: String, outputPath: String, config: PdfToImagesConfig?): String {
+        val file = File(inputPath)
+        if (!file.exists()) {
+            throw FileNotFoundException("File does not exist: $inputPath")
+        }
+        val config = config ?: PdfToImagesConfig()
+        var format = Bitmap.CompressFormat.PNG
+        format =
+                when (config.imgFormat) {
+                    ImageFormat.PNG -> Bitmap.CompressFormat.PNG
+                    ImageFormat.JPG -> Bitmap.CompressFormat.JPEG
+                }
+
+        val fileDescriptor =
+                ParcelFileDescriptor.open(File(inputPath), ParcelFileDescriptor.MODE_READ_ONLY)
+        val renderer = PdfRenderer(fileDescriptor)
+        val pageNumbers = config.pagesIndex ?: (0 until renderer.pageCount).toList()
+        // check if pageNumbers is valid
+        if (pageNumbers.any { it < 0 || it >= renderer.pageCount }) {
+            renderer.close()
+            fileDescriptor.close()
+            throw IllegalArgumentException("pageNumbers is invalid")
+        }
+
+        try {
+            val pageSizes = mutableListOf<PageDimension>()
+            for (pageIndex in pageNumbers) {
+                val page = renderer.openPage(pageIndex)
+                try {
+                    val width = (page.width * RENDER_SCALE).roundToInt().coerceAtLeast(1)
+                    val height = (page.height * RENDER_SCALE).roundToInt().coerceAtLeast(1)
+                    pageSizes.add(PageDimension(width, height))
+                } finally {
+                    page.close()
+                }
+            }
+
+            val totalHeightLong = pageSizes.fold(0L) { acc, size -> acc + size.height }
+            val maxWidth = pageSizes.maxOfOrNull { it.width } ?: 0
+            if (maxWidth <= 0 || totalHeightLong <= 0 || totalHeightLong > Int.MAX_VALUE) {
+                throw IllegalArgumentException("Resulting image size is invalid or too large")
+            }
+            val totalHeight = totalHeightLong.toInt()
+
+            val mergedImage = createBitmap(maxWidth, totalHeight)
+            val mergedCanvas = Canvas(mergedImage)
+            mergedCanvas.drawColor(Color.WHITE)
+
+            var currentY = 0
+            for ((index, pageIndex) in pageNumbers.withIndex()) {
+                val page = renderer.openPage(pageIndex)
+                val (width, height) = with(pageSizes[index]) { width to height }
+                val pageBitmap = try {
+                    renderPageToBitmap(page, width, height)
+                } finally {
+                    page.close()
+                }
+                mergedCanvas.drawBitmap(pageBitmap, 0f, currentY.toFloat(), null)
+                currentY += height
+                pageBitmap.recycle()
+            }
+
+            val outputFile = File(outputPath)
+            outputFile.parentFile?.let { parent ->
+                if (!parent.exists()) {
+                    parent.mkdirs()
+                }
+            }
+            val targetQuality = if (format == Bitmap.CompressFormat.PNG) 100 else config.quality
+            FileOutputStream(outputFile).use { out ->
+                if (!mergedImage.compress(format, targetQuality, out)) {
+                    throw IllegalStateException("Failed to write merged image")
+                }
+            }
+            mergedImage.recycle()
+            return outputPath
+        } finally {
+            renderer.close()
+            fileDescriptor.close()
+        }
+    }
+
+    private fun renderPageToBitmap(page: PdfRenderer.Page): Bitmap {
+        val width = (page.width * RENDER_SCALE).roundToInt().coerceAtLeast(1)
+        val height = (page.height * RENDER_SCALE).roundToInt().coerceAtLeast(1)
+        return renderPageToBitmap(page, width, height)
+    }
+
+    private fun renderPageToBitmap(page: PdfRenderer.Page, width: Int, height: Int): Bitmap {
+        val bitmap = createBitmap(width, height)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
+        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+        return bitmap
+    }
+
+    private const val RENDER_SCALE = 3.0f
 }
+

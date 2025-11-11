@@ -145,6 +145,22 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.error("PDF_TO_IMAGES_FAILED", "Failed to convert PDF to images", e.message)
                 }
             }
+            "pdfToLongImage" -> {
+                val inputPath = call.argument<String>("inputPath")
+                val outputPath = call.argument<String>("outputPath")
+                val configMap = call.argument<Map<String, Any?>>("config")
+                if (inputPath == null || outputPath == null) {
+                    result.error("INVALID_ARGUMENTS", "Input path or output path is null", null)
+                    return
+                }
+                try {
+                    val config = PdfToImagesConfig(configMap)
+                    val longImagePath = PdfToImageHelper.pdfToLongImage(inputPath, outputPath, config)
+                    result.success(longImagePath)
+                } catch (e: Exception) {
+                    result.error("PDF_TO_LONG_IMAGE_FAILED", "Failed to convert PDF to long image", e.message)
+                }
+            }
             else -> {
                 result.notImplemented()
             }
