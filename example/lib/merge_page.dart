@@ -35,6 +35,8 @@ class MergeController extends GetxController {
   }
 
   Future<void> choosePagesToMerge() async {
+    Get.showOverlay(
+      asyncFunction: () async {
     try {
       final inputPath = assetsPdfFilePath;
       final pagesIndex = [1, 2];
@@ -51,10 +53,15 @@ class MergeController extends GetxController {
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }
+      },
+      loadingWidget: const CircularProgressIndicator(),
+    );
   }
 
   Future<void> mergePdfFiles() async {
-    try {
+    Get.showOverlay(
+      asyncFunction: () async {
+        try {
       final tempDir = await getTemporaryDirectory();
       final mergedPath = '${tempDir.path}/merged.pdf'; // 1,2
       final outputPath = '${tempDir.path}/files_merged.pdf';
@@ -64,31 +71,38 @@ class MergeController extends GetxController {
         outputPath: outputPath,
       );
 
-        docRef.value = PdfDocumentRefFile(result);
-      
-    } catch (e) {
-      Get.snackbar('Error', e.toString());
-    }
-  }
-
-  Future<void> mergeImagesToPdf() async {
-    try {
-      // pick images
-      final imagesPath = await ImagePicker().pickMultiImage();
-      if (imagesPath.isEmpty) return;
-
-      final tempDir = await getTemporaryDirectory();
-      final outputPath = '${tempDir.path}/images_merged.pdf';
-      final filesPath = imagesPath.map((x) => x.path).toList();
-      final result = await _pdfWorkerPlugin.mergeImagesToPdf(
-        imagesPath: filesPath,
-        outputPath: outputPath,
-      );
-
       docRef.value = PdfDocumentRefFile(result);
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }
+      },
+      loadingWidget: const CircularProgressIndicator(),
+    );
+  }
+
+  Future<void> mergeImagesToPdf() async {
+    Get.showOverlay(
+      asyncFunction: () async {
+        try {
+          // pick images
+          final imagesPath = await ImagePicker().pickMultiImage();
+          if (imagesPath.isEmpty) return;
+
+          final tempDir = await getTemporaryDirectory();
+          final outputPath = '${tempDir.path}/images_merged.pdf';
+          final filesPath = imagesPath.map((x) => x.path).toList();
+          final result = await _pdfWorkerPlugin.mergeImagesToPdf(
+            imagesPath: filesPath,
+            outputPath: outputPath,
+          );
+
+          docRef.value = PdfDocumentRefFile(result);
+        } catch (e) {
+          Get.snackbar('Error', e.toString());
+        }
+      },
+      loadingWidget: const CircularProgressIndicator(),
+    );
   }
 
   Future<void> pdfToImages() async {
@@ -100,46 +114,54 @@ class MergeController extends GetxController {
         Directory(outputDirectory).createSync(recursive: true);
       }
 
-      final result = await _pdfWorkerPlugin.pdfToImages(
-        inputPath: assetsPdfFilePath,
-        outputDirectory: outputDirectory,
-        config: PdfToImagesConfig(
-          pagesIndex: [ 0,3],
-          imgFormat: ImageFormat.jpg,
-          quality: 30,
-        ),
+      final result = await Get.showOverlay(
+        asyncFunction: () async {
+          final result = await _pdfWorkerPlugin.pdfToImages(
+            inputPath: assetsPdfFilePath,
+            outputDirectory: outputDirectory,
+            config: PdfToImagesConfig(
+              pagesIndex: [0, 3],
+              imgFormat: ImageFormat.jpg,
+              quality: 30,
+            ),
+          );
+          return result;
+        },
+        loadingWidget: const CircularProgressIndicator(),
       );
 
       Get.toNamed('/result', arguments: result);
 
       // show images
-     // Get.snackbar('Success', 'PDF to images success ${result.length} images');
-
-
-
+      // Get.snackbar('Success', 'PDF to images success ${result.length} images');
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }
   }
 
   Future<void> pdfToLongImage() async {
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final outputPath = '${tempDir.path}/long_image.jpg';
-      final result = await _pdfWorkerPlugin.pdfToLongImage(
-        inputPath: assetsPdfFilePath,
-        outputPath: outputPath,
-        config: PdfToImagesConfig(
-          pagesIndex: [3,2,1,0],
-          imgFormat: ImageFormat.png,
-          quality: 80,
-        ),
-      );
-
-      Get.toNamed('/result', arguments: [result]);
-    } catch (e) {
-      Get.snackbar('Error', e.toString());
-    }
+    Get.showOverlay(
+      asyncFunction: () async {
+        try {
+          final tempDir = await getTemporaryDirectory();
+          final outputPath = '${tempDir.path}/long_image.jpg';
+          final result = await _pdfWorkerPlugin.pdfToLongImage(
+            inputPath: assetsPdfFilePath,
+            outputPath: outputPath,
+            config: PdfToImagesConfig(
+              pagesIndex: [3, 2, 1, 0],
+              imgFormat: ImageFormat.png,
+              quality: 80,
+            ),
+          );
+          Get.toNamed('/result', arguments: [result]);
+          return result;
+        } catch (e) {
+          Get.snackbar('Error', e.toString());
+        }
+      },
+      loadingWidget: const CircularProgressIndicator(),
+    );
   }
 }
 
@@ -152,18 +174,43 @@ class MergePage extends GetView<MergeController> {
       appBar: AppBar(title: const Text('Merge Page')),
       body: Column(
         children: [
-          ElevatedButton(onPressed: () async {controller.choosePagesToMerge();}, child: const Text('Choose Pages To Merge')),
+          ElevatedButton(
+            onPressed: () async {
+              controller.choosePagesToMerge();
+            },
+            child: const Text('Choose Pages To Merge'),
+          ),
 
-          ElevatedButton(onPressed: () async {controller.mergePdfFiles();}, child: const Text('Merge PDF Files')),
-          
+          ElevatedButton(
+            onPressed: () async {
+              controller.mergePdfFiles();
+            },
+            child: const Text('Merge PDF Files'),
+          ),
+
           // merge images to pdf
-          ElevatedButton(onPressed: () async {controller.mergeImagesToPdf();}, child: const Text('Merge Images To PDF ')),
+          ElevatedButton(
+            onPressed: () async {
+              controller.mergeImagesToPdf();
+            },
+            child: const Text('Merge Images To PDF '),
+          ),
 
           // pdf to images
-          ElevatedButton(onPressed: () async {controller.pdfToImages();}, child: const Text('PDF To Images')),
+          ElevatedButton(
+            onPressed: () async {
+              controller.pdfToImages();
+            },
+            child: const Text('PDF To Images'),
+          ),
 
           // pdf to long image
-          ElevatedButton(onPressed: () async {controller.pdfToLongImage();}, child: const Text('PDF To Long Image')),
+          ElevatedButton(
+            onPressed: () async {
+              controller.pdfToLongImage();
+            },
+            child: const Text('PDF To Long Image'),
+          ),
           Obx(
             () => Expanded(
               child: controller.docRef.value != null

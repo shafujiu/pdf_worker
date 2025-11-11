@@ -1,5 +1,7 @@
 package com.example.pdf_worker
 
+import android.os.Handler
+import android.os.Looper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -92,12 +94,17 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.error("INVALID_ARGUMENTS", "Input path, output path or pages is null", null)
                     return
                 }
-                try {
-                    val outputPath = pdfMerger.choosePagesIndexToMerge(inputPath, outputPath, pagesIndex)
-                    result.success(outputPath)
-                } catch (e: Exception) {
-                    result.error("CHOOSE_PAGES_TO_MERGE_FAILED", "Failed to choose pages to merge", e.message)
-                }
+                executeInBackground(
+                    task = {
+                        pdfMerger.choosePagesIndexToMerge(inputPath, outputPath, pagesIndex)
+                    },
+                    onSuccess = { mergedPath ->
+                        result.success(mergedPath)
+                    },
+                    onError = { e ->
+                        result.error("CHOOSE_PAGES_TO_MERGE_FAILED", "Failed to choose pages to merge", e.message)
+                    },
+                )
             }
             "mergePdfFiles" -> {
                 val filesPath = call.argument<List<String>>("filesPath")
@@ -106,12 +113,17 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.error("INVALID_ARGUMENTS", "Files path or output path is null", null)
                     return
                 }
-                try {
-                    val outputPath = pdfMerger.mergePdfFiles(filesPath, outputPath)
-                    result.success(outputPath)
-                } catch (e: Exception) {
-                    result.error("MERGE_PDF_FILES_FAILED", "Failed to merge PDF files", e.message)
-                }
+                executeInBackground(
+                    task = {
+                        pdfMerger.mergePdfFiles(filesPath, outputPath)
+                    },
+                    onSuccess = { mergedPath ->
+                        result.success(mergedPath)
+                    },
+                    onError = { e ->
+                        result.error("MERGE_PDF_FILES_FAILED", "Failed to merge PDF files", e.message)
+                    },
+                )
             }
             "mergeImagesToPdf" -> {
                 val imagesPath = call.argument<List<String>>("imagesPath")
@@ -121,13 +133,18 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.error("INVALID_ARGUMENTS", "Images path or output path is null", null)
                     return
                 }
-                try {
-                    val config = parsePdfConfig(configMap)
-                    val mergedPath = pdfMerger.mergeImagesToPdf(imagesPath, outputPath, config)
-                    result.success(mergedPath)
-                } catch (e: Exception) {
-                    result.error("MERGE_IMAGES_TO_PDF_FAILED", "Failed to merge images to PDF", e.message)
-                }
+                val config = parsePdfConfig(configMap)
+                executeInBackground(
+                    task = {
+                        pdfMerger.mergeImagesToPdf(imagesPath, outputPath, config)
+                    },
+                    onSuccess = { mergedPath ->
+                        result.success(mergedPath)
+                    },
+                    onError = { e ->
+                        result.error("MERGE_IMAGES_TO_PDF_FAILED", "Failed to merge images to PDF", e.message)
+                    },
+                )
             }
             "pdfToImages" -> {
                 val inputPath = call.argument<String>("inputPath")
@@ -137,13 +154,18 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.error("INVALID_ARGUMENTS", "Input path or output directory is null", null)
                     return
                 }
-                try {
-                    val config = PdfToImagesConfig(configMap)
-                    val imagesPath = PdfToImageHelper.pdfToImages(inputPath, outputDirectory, config)
-                    result.success(imagesPath)
-                } catch (e: Exception) {
-                    result.error("PDF_TO_IMAGES_FAILED", "Failed to convert PDF to images", e.message)
-                }
+                val config = PdfToImagesConfig(configMap)
+                executeInBackground(
+                    task = {
+                        PdfToImageHelper.pdfToImages(inputPath, outputDirectory, config)
+                    },
+                    onSuccess = { imagesPath ->
+                        result.success(imagesPath)
+                    },
+                    onError = { e ->
+                        result.error("PDF_TO_IMAGES_FAILED", "Failed to convert PDF to images", e.message)
+                    },
+                )
             }
             "pdfToLongImage" -> {
                 val inputPath = call.argument<String>("inputPath")
@@ -153,19 +175,41 @@ class PdfWorkerPlugin : FlutterPlugin, MethodCallHandler {
                     result.error("INVALID_ARGUMENTS", "Input path or output path is null", null)
                     return
                 }
-                try {
-                    val config = PdfToImagesConfig(configMap)
-                    val longImagePath = PdfToImageHelper.pdfToLongImage(inputPath, outputPath, config)
-                    result.success(longImagePath)
-                } catch (e: Exception) {
-                    result.error("PDF_TO_LONG_IMAGE_FAILED", "Failed to convert PDF to long image", e.message)
-                }
+                val config = PdfToImagesConfig(configMap)
+                executeInBackground(
+                    task = {
+                        PdfToImageHelper.pdfToLongImage(inputPath, outputPath, config)
+                    },
+                    onSuccess = { longImagePath ->
+                        result.success(longImagePath)
+                    },
+                    onError = { e ->
+                        result.error("PDF_TO_LONG_IMAGE_FAILED", "Failed to convert PDF to long image", e.message)
+                    },
+                )
             }
             else -> {
                 result.notImplemented()
             }
         }
     }
+
+    private fun <T> executeInBackground(
+        task: () -> T,
+        onSuccess: (T) -> Unit,
+        onError: (Exception) -> Unit,
+    ) {
+        Thread {
+            try {
+                val result = task()
+                mainHandler.post { onSuccess(result) }
+            } catch (e: Exception) {
+                mainHandler.post { onError(e) }
+            }
+        }.start()
+    }
+
+    private val mainHandler: Handler by lazy { Handler(Looper.getMainLooper()) }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)

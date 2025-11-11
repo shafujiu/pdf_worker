@@ -91,14 +91,20 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
             details: nil))
         return
       }
-      do {
-        let outputPath = try pdfMerger.choosePagesIndexToMerge(
-          inputPath: inputPath,
-          outputPath: outputPath,
-          pagesIndex: pagesIndex)
-        result(outputPath)
-      } catch {
-        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          let mergedPath = try self.pdfMerger.choosePagesIndexToMerge(
+            inputPath: inputPath,
+            outputPath: outputPath,
+            pagesIndex: pagesIndex)
+          DispatchQueue.main.async {
+            result(mergedPath)
+          }
+        } catch {
+          DispatchQueue.main.async {
+            result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+          }
+        }
       }
     case "mergePdfFiles":
       guard let args = call.arguments as? [String: Any],
@@ -110,13 +116,19 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
             code: "INVALID_ARGUMENTS", message: "Missing filesPath or outputPath", details: nil))
         return
       }
-      do {
-        let outputPath = try pdfMerger.mergePdfFiles(
-          filesPath: filesPath,
-          outputPath: outputPath)
-        result(outputPath)
-      } catch {
-        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          let mergedPath = try self.pdfMerger.mergePdfFiles(
+            filesPath: filesPath,
+            outputPath: outputPath)
+          DispatchQueue.main.async {
+            result(mergedPath)
+          }
+        } catch {
+          DispatchQueue.main.async {
+            result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+          }
+        }
       }
 
     case "mergeImagesToPdf":
@@ -129,15 +141,21 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
             code: "INVALID_ARGUMENTS", message: "Missing imagesPath or outputPath", details: nil))
         return
       }
-      do {
-        let configDict = args["config"] as? [String: Any]
-        let outputPath = try pdfMerger.imagesToPdf(
-          imagesPath: imagesPath,
-          outputPath: outputPath,
-          config: ImagesToPdfConfig(from: configDict))
-        result(outputPath)
-      } catch {
-        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      let configDict = args["config"] as? [String: Any]
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          let outputPath = try self.pdfMerger.imagesToPdf(
+            imagesPath: imagesPath,
+            outputPath: outputPath,
+            config: ImagesToPdfConfig(from: configDict))
+          DispatchQueue.main.async {
+            result(outputPath)
+          }
+        } catch {
+          DispatchQueue.main.async {
+            result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+          }
+        }
       }
     case "pdfToImages":
       guard let args = call.arguments as? [String: Any],
@@ -149,15 +167,21 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
             code: "INVALID_ARGUMENTS", message: "Missing inputPath or outputDirectory", details: nil))
         return
       }
-      do {
-        let configDict = args["config"] as? [String: Any]
-        let imagesPath: [String] = try PdfToImageHelper.pdfToImages(
-          inputPath: inputPath,
-          outputDirectory: outputDirectory,
-          config: PdfToImagesConfig(from: configDict))
-        result(imagesPath)
-      } catch {
-        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      let configDict = args["config"] as? [String: Any]
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          let imagesPath: [String] = try PdfToImageHelper.pdfToImages(
+            inputPath: inputPath,
+            outputDirectory: outputDirectory,
+            config: PdfToImagesConfig(from: configDict))
+          DispatchQueue.main.async {
+            result(imagesPath)
+          }
+        } catch {
+          DispatchQueue.main.async {
+            result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+          }
+        }
       }
     case "pdfToLongImage":
       guard let args = call.arguments as? [String: Any],
@@ -169,15 +193,21 @@ public class PdfWorkerPlugin: NSObject, FlutterPlugin {
             code: "INVALID_ARGUMENTS", message: "Missing inputPath or outputPath", details: nil))
         return
       }
-      do {
-        let configDict = args["config"] as? [String: Any]
-        let outputPath = try PdfToImageHelper.pdfToLongImage(
-          inputPath: inputPath,
-          outputPath: outputPath,
-          config: PdfToImagesConfig(from: configDict))
-        result(outputPath)
-      } catch {
-        result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+      let configDict = args["config"] as? [String: Any]
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          let outputPath = try PdfToImageHelper.pdfToLongImage(
+            inputPath: inputPath,
+            outputPath: outputPath,
+            config: PdfToImagesConfig(from: configDict))
+          DispatchQueue.main.async {
+            result(outputPath)
+          }
+        } catch {
+          DispatchQueue.main.async {
+            result(FlutterError(code: "FILE_NOT_FOUND", message: "File not found", details: nil))
+          }
+        }
       }
     default:
       result(FlutterMethodNotImplemented)
