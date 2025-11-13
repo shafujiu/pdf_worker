@@ -22,3 +22,9 @@
 ## 1.0.4
 
 * do task on background
+
+## 1.0.5
+
+* fix ios pdf to image memory issue
+* add example pdf file picker
+

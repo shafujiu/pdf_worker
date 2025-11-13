@@ -1,6 +1,6 @@
 name: pdf_worker
 description: "A new Flutter PDF plugin project. you can lock, unlock PDF file."
-version: 1.0.4
+version: 1.0.5
 
 environment:
   sdk: ^3.9.2
