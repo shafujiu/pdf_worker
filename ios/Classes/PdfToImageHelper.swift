@@ -74,39 +74,48 @@ class PdfToImageHelper {
         }
 
         var imagesPath = [String]()
+        imagesPath.reserveCapacity(targetPages.count)
 
         for index in targetPages {
-            guard let pdfPage = pdfDocument.page(at: index) else { throw PdfToImageError.outOfPage }
-            let mediaBoxRect = pdfPage.bounds(for: .cropBox)
-            let renderSize = mediaBoxRect.size
+            try autoreleasepool {
+                guard let pdfPage = pdfDocument.page(at: index) else {
+                    throw PdfToImageError.outOfPage
+                }
 
-            let renderer = UIGraphicsImageRenderer(size: renderSize)
-            let image = renderer.image { context in
-                UIColor.white.set()
-                context.fill(CGRect(origin: .zero, size: renderSize))
-                let cgContext = context.cgContext
-                cgContext.translateBy(x: 0.0, y: renderSize.height)
-                cgContext.scaleBy(x: 1, y: -1)
+                let mediaBoxRect = pdfPage.bounds(for: .cropBox)
+                let renderSize = mediaBoxRect.size
+                let rendererFormat = UIGraphicsImageRendererFormat.default()
+                rendererFormat.opaque = true
+                let renderer = UIGraphicsImageRenderer(size: renderSize, format: rendererFormat)
 
-                pdfPage.draw(with: .cropBox, to: cgContext)
-            }
+                let renderingActions: (UIGraphicsImageRendererContext) -> Void = { context in
+                    context.cgContext.setFillColor(UIColor.white.cgColor)
+                    context.cgContext.fill(CGRect(origin: .zero, size: renderSize))
+                    let cgContext = context.cgContext
+                    cgContext.translateBy(x: 0.0, y: renderSize.height)
+                    cgContext.scaleBy(x: 1, y: -1)
 
-            let fileURL = createFileURL(
-                directory: outputURL, format: config.imgFormat, index: index)
-            let data: Data?
-            switch config.imgFormat {
-            case .png:
-                data = image.pngData()
-            case .jpg:
-                data = image.jpegData(compressionQuality: config.normalizedQuality)
-            }
+                    pdfPage.draw(with: .cropBox, to: cgContext)
+                }
 
-            guard let imageData = data else { continue }
-            do {
-                try imageData.write(to: fileURL)
-                imagesPath.append(fileURL.path)
-            } catch {
-                continue
+                let fileURL = createFileURL(
+                    directory: outputURL, format: config.imgFormat, index: index)
+                let imageData: Data
+                switch config.imgFormat {
+                case .png:
+                    imageData = renderer.pngData(actions: renderingActions)
+                case .jpg:
+                    imageData = renderer.jpegData(
+                        withCompressionQuality: config.normalizedQuality,
+                        actions: renderingActions)
+                }
+
+                do {
+                    try imageData.write(to: fileURL)
+                    imagesPath.append(fileURL.path)
+                } catch {
+                    return
+                }
             }
         }
         return imagesPath

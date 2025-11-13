@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -37,22 +38,22 @@ class MergeController extends GetxController {
   Future<void> choosePagesToMerge() async {
     Get.showOverlay(
       asyncFunction: () async {
-    try {
-      final inputPath = assetsPdfFilePath;
-      final pagesIndex = [1, 2];
-      final tempDir = await getTemporaryDirectory();
-      final outputPath = '${tempDir.path}/merged.pdf';
-      final result = await _pdfWorkerPlugin.choosePagesIndexToMerge(
-        inputPath: inputPath,
-        outputPath: outputPath,
-        pagesIndex: pagesIndex,
-      );
-      if (result != null) {
-        docRef.value = PdfDocumentRefFile(result);
-      }
-    } catch (e) {
-      Get.snackbar('Error', e.toString());
-    }
+        try {
+          final inputPath = assetsPdfFilePath;
+          final pagesIndex = [1, 2];
+          final tempDir = await getTemporaryDirectory();
+          final outputPath = '${tempDir.path}/merged.pdf';
+          final result = await _pdfWorkerPlugin.choosePagesIndexToMerge(
+            inputPath: inputPath,
+            outputPath: outputPath,
+            pagesIndex: pagesIndex,
+          );
+          if (result != null) {
+            docRef.value = PdfDocumentRefFile(result);
+          }
+        } catch (e) {
+          Get.snackbar('Error', e.toString());
+        }
       },
       loadingWidget: const CircularProgressIndicator(),
     );
@@ -62,19 +63,19 @@ class MergeController extends GetxController {
     Get.showOverlay(
       asyncFunction: () async {
         try {
-      final tempDir = await getTemporaryDirectory();
-      final mergedPath = '${tempDir.path}/merged.pdf'; // 1,2
-      final outputPath = '${tempDir.path}/files_merged.pdf';
-      final filesPath = [assetsPdfFilePath, mergedPath];
-      final result = await _pdfWorkerPlugin.mergePdfFiles(
-        filesPath: filesPath,
-        outputPath: outputPath,
-      );
+          final tempDir = await getTemporaryDirectory();
+          final mergedPath = '${tempDir.path}/merged.pdf'; // 1,2
+          final outputPath = '${tempDir.path}/files_merged.pdf';
+          final filesPath = [assetsPdfFilePath, mergedPath];
+          final result = await _pdfWorkerPlugin.mergePdfFiles(
+            filesPath: filesPath,
+            outputPath: outputPath,
+          );
 
-      docRef.value = PdfDocumentRefFile(result);
-    } catch (e) {
-      Get.snackbar('Error', e.toString());
-    }
+          docRef.value = PdfDocumentRefFile(result);
+        } catch (e) {
+          Get.snackbar('Error', e.toString());
+        }
       },
       loadingWidget: const CircularProgressIndicator(),
     );
@@ -114,15 +115,21 @@ class MergeController extends GetxController {
         Directory(outputDirectory).createSync(recursive: true);
       }
 
+      FilePickerResult? pickResult = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+      final inputPath = pickResult?.files.single.path;
+      if (inputPath == null) return;
       final result = await Get.showOverlay(
         asyncFunction: () async {
           final result = await _pdfWorkerPlugin.pdfToImages(
-            inputPath: assetsPdfFilePath,
+            inputPath: inputPath,
             outputDirectory: outputDirectory,
             config: PdfToImagesConfig(
-              pagesIndex: [0, 3],
-              imgFormat: ImageFormat.jpg,
-              quality: 30,
+              // pagesIndex: [0, 3],
+              imgFormat: ImageFormat.png,
+              // quality: 30,
             ),
           );
           return result;
