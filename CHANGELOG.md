@@ -28,3 +28,8 @@
 * fix ios pdf to image memory issue
 * add example pdf file picker
 
+## 1.0.6
+
+* support environment sdk >= 3.7.0
+
+

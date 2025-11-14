@@ -52,7 +52,7 @@ try {
 ### TODO List
 
 - [x] add merge pdf to long picture
-- [ ] add images to pdf 
+- [x] add images to pdf 
 - [x] add pdf to images
 
 
